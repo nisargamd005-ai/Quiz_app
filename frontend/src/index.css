@@ -1,0 +1,298 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syncopate:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* 🏺 Elite Luxury Color Palette */
+  --bg-darkest: #000000;
+  --bg-deep: #050505;
+  --bg-card: rgba(18, 18, 18, 0.7);
+  
+  --pink-elite: #e91e63;
+  --pink-glow: rgba(233, 30, 99, 0.4);
+  --pink-muted: rgba(233, 30, 99, 0.1);
+
+  --text-pure: #ffffff;
+  --text-tint: #ffdae4;
+  --text-dim: #666666;
+
+  /* 🏺 Gradients */
+  --grad-luxury: linear-gradient(135deg, #e91e63 0%, #db005d 100%);
+  --grad-dark: linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
+
+  /* 🏺 Effects */
+  --glass: blur(25px);
+  --border-pink: 1px solid rgba(233, 30, 99, 0.3);
+  --shadow-pink: 0 10px 40px -10px rgba(233, 30, 99, 0.4);
+  
+  --radius-xl: 32px;
+  --radius-lg: 20px;
+  --radius-md: 12px;
+}
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: var(--bg-darkest);
+  color: var(--text-pure);
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 🪐 Atmospheric Background Particles */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  width: 50vw;
+  height: 50vw;
+  border-radius: 50%;
+  filter: blur(150px);
+  z-index: -1;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+body::before { top: -10vw; left: -10vw; background: var(--pink-elite); }
+body::after { bottom: -10vw; right: -10vw; background: #880e4f; }
+
+/* 🏺 Container Management */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* 🏺 Navigation Perfected */
+.navbar {
+  height: 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: var(--glass);
+  background: rgba(0, 0, 0, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky; top: 0; z-index: 1000;
+  padding: 0 4rem;
+}
+
+.navbar-logo {
+  font-family: 'Syncopate', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-pure);
+  text-decoration: none;
+  letter-spacing: 0.4em;
+  display: flex; gap: 0.5rem;
+}
+
+.navbar-logo span { color: var(--pink-elite); }
+
+.navbar-links {
+  display: flex; gap: 3rem;
+  list-style: none;
+}
+
+.navbar-links a {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.navbar-links a:hover, .navbar-links a.active {
+  color: var(--pink-elite);
+  letter-spacing: 0.35em;
+}
+
+/* 🏺 Buttons Perfected */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem 2.8rem;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  text-decoration: none;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--grad-luxury);
+  color: var(--text-pure);
+  box-shadow: var(--shadow-pink);
+}
+
+.btn-primary:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 60px -10px rgba(233, 30, 99, 0.6);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--pink-elite);
+  color: var(--pink-elite);
+}
+
+.btn-outline:hover {
+  background: var(--pink-elite);
+  color: white;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px -5px var(--pink-glow);
+}
+
+/* 🏺 Layout Sections */
+.hero {
+  padding: 10rem 0 6rem;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 12vw, 8rem);
+  font-weight: 950;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  margin-bottom: 2.5rem;
+  text-transform: uppercase;
+}
+
+.hero p {
+  color: var(--text-tint);
+  font-size: 1.25rem;
+  max-width: 500px;
+  margin: 0 auto 4rem;
+  opacity: 0.6;
+}
+
+/* 🏺 Quiz Cards Perfected */
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+  padding-bottom: 10rem;
+}
+
+.card {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass);
+  border: var(--border-pink);
+  border-radius: var(--radius-xl);
+  padding: 3.5rem;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  cursor: pointer;
+}
+
+.card:hover {
+  background: rgba(233, 30, 99, 0.05);
+  border-color: var(--pink-elite);
+  transform: translateY(-15px) rotate(1deg);
+  box-shadow: var(--shadow-pink);
+}
+
+.card h2 {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  color: var(--text-pure);
+}
+
+.card p {
+  font-size: 1rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* 🏺 Forms Perfected */
+.auth-box {
+  max-width: 480px;
+  margin: 5rem auto;
+  padding: 4.5rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: var(--border-pink);
+  box-shadow: var(--shadow-pink);
+}
+
+.form-group { margin-bottom: 2.5rem; }
+.form-group label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--pink-elite);
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.4rem;
+  border-radius: var(--radius-md);
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--pink-elite);
+  box-shadow: 0 0 20px rgba(233, 30, 99, 0.2);
+}
+
+/* 🏺 Quiz Interface Perfected */
+.quiz-q { font-size: 2.5rem; font-weight: 900; line-height: 1.1; margin: 3rem 0; }
+.option-btn {
+  width: 100%;
+  text-align: left;
+  padding: 1.8rem 2.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.option-btn:hover { border-color: var(--pink-elite); transform: scale(1.03); background: rgba(233, 30, 99, 0.05); }
+.option-btn.selected { background: var(--pink-elite); border-color: var(--pink-elite); }
+
+/* 🏺 Smooth Transitions */
+.reveal {
+  animation: revealIn 0.8s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+@keyframes revealIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 🪐 Mobile Balancing */
+@media (max-width: 768px) {
+  .navbar { padding: 0 1.5rem; height: 80px; }
+  .navbar-links { display: none; }
+  .hero h1 { font-size: 4rem; }
+  .card { padding: 2.5rem; }
+  .quiz-q { font-size: 1.8rem; }
+}
+
+.pink-scroll::-webkit-scrollbar { width: 4px; }
+.pink-scroll::-webkit-scrollbar-thumb { background: var(--pink-elite); border-radius: 10px; }

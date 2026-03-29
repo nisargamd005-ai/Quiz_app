@@ -1,0 +1,37 @@
+# 🛠️ QuizMaster .gitignore (Full Security)
+
+# 🐍 Backend
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+backend/.Python
+backend/env/
+backend/venv/
+backend/.env
+backend/.venv
+backend/Pipfile.lock
+
+# ⚛️ Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.env
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# 🖥️ Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# 📦 Temp
+*.log
+/tmp/
+.gemini/
