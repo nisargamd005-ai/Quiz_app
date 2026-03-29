@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getQuestions, submitQuiz } from '../api';
+import { playSound } from '../App';
 
 const TIME_PER_Q = 30;
 
@@ -13,6 +14,7 @@ export default function QuizPlay() {
   const [answers, setAnswers] = useState({});
   const [revealed, setRevealed] = useState(false);
   const [timeLeft, setTimeLeft] = useState(TIME_PER_Q);
+  const [hintUsed, setHintUsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const timerRef = useRef(null);
@@ -20,6 +22,7 @@ export default function QuizPlay() {
   useEffect(() => {
     const params = {
       category: searchParams.get('category') || undefined,
+      difficulty: searchParams.get('difficulty') || undefined,
       limit: 10
     };
 
@@ -39,7 +42,11 @@ export default function QuizPlay() {
     setTimeLeft(TIME_PER_Q);
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
-        if (t <= 1) { clearInterval(timerRef.current); autoReveal(); return 0; }
+        if (t <= 1) { 
+          clearInterval(timerRef.current); 
+          autoReveal(); 
+          return 0; 
+        }
         return t - 1;
       });
     }, 1000);
@@ -49,23 +56,36 @@ export default function QuizPlay() {
   const handleSelect = (optionId) => {
     if (revealed) return;
     clearInterval(timerRef.current);
+    const correct = optionId === questions[current].correct_answer;
+    
+    // 🔊 Play Elite Haptic Sound
+    if (correct) playSound(880, 'sine', 0.5);
+    else playSound(110, 'triangle', 0.4);
+
     setAnswers(prev => ({ ...prev, [questions[current].id]: optionId }));
     setRevealed(true);
   };
 
   const handleNext = () => {
     setRevealed(false);
+    setHintUsed(false);
     setCurrent(c => c + 1);
   };
 
-  const handleSubmit = async () => {
+  const handleFinish = async () => {
     setSubmitting(true);
+    const user = JSON.parse(localStorage.getItem('user'));
     const payload = questions.map(q => ({
       question_id: q.id,
-      selected_option: answers[q.id] || '',
+      selected_option: answers[q.id] || ''
     }));
+    
     try {
-      const result = await submitQuiz(payload);
+      const result = await submitQuiz({
+        user_email: user.email,
+        category: questions[0].category,
+        answers: payload
+      });
       navigate('/results', { state: { result, questions } });
     } catch (e) {
       console.error(e);
@@ -82,12 +102,11 @@ export default function QuizPlay() {
   const q = questions[current];
   const selected = answers[q.id];
   const isLast = current === questions.length - 1;
-  const progress = ((current + (revealed ? 1 : 0)) / questions.length) * 100;
 
   return (
     <div className="reveal container">
       <div style={{ padding: '6rem 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
            <div>
              <h4 style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.4em', color: 'var(--pink-elite)', marginBottom: '1rem' }}>
                 Challenge: {q.category}
@@ -132,6 +151,18 @@ export default function QuizPlay() {
             })}
           </div>
 
+          {!revealed && !hintUsed && q.hint && (
+            <button className="btn btn-outline" style={{ marginTop: '2rem', fontSize: '0.7rem' }} onClick={() => setHintUsed(true)}>
+               💡 UNLOCK HINT
+            </button>
+          )}
+
+          {hintUsed && !revealed && (
+            <div className="reveal" style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(233,30,99,0.05)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--pink-elite)' }}>
+               <p style={{ fontSize: '0.9rem', color: 'var(--pink-elite)', fontWeight: 700 }}>💡 HINT: "{q.hint}"</p>
+            </div>
+          )}
+
           {revealed && (
             <div className="reveal" style={{ marginTop: '4rem', padding: '3.5rem', background: selected === q.correct_answer ? 'rgba(0,100,50,0.1)' : 'rgba(233,30,99,0.05)', borderRadius: 'var(--radius-lg)', borderLeft: '8px solid var(--pink-elite)' }}>
                <h4 style={{ color: selected === q.correct_answer ? 'var(--text-pure)' : 'var(--pink-elite)', marginBottom: '1rem', fontWeight: 900, letterSpacing: '0.2em', fontSize: '0.85rem' }}>
@@ -147,7 +178,7 @@ export default function QuizPlay() {
            
            {revealed && (
              isLast ? (
-               <button className="btn btn-primary btn-lg" onClick={handleSubmit} disabled={submitting}>
+               <button className="btn btn-primary btn-lg" onClick={handleFinish} disabled={submitting}>
                  {submitting ? 'Processing Result...' : 'Finalize & Rank 🏁'}
                </button>
              ) : (

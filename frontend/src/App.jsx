@@ -6,6 +6,9 @@ import QuizPlay from './pages/QuizPlay';
 import Results from './pages/Results';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Leaderboard from './pages/Leaderboard';
+import History from './pages/History';
+import Admin from './pages/Admin';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -14,22 +17,51 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// 🔊 Elite Haptic Audio Engine
+export const playSound = (freq, type, duration) => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    g.gain.setValueAtTime(0.1, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  } catch (e) {}
+};
+
 export default function App() {
+  const token = localStorage.getItem('token');
+
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      {/* 🪐 Global Atmospheric Nebula Elements */}
+      <div className="nebula-particle nebula-1"></div>
+      <div className="nebula-particle nebula-2"></div>
+      <div className="nebula-particle nebula-3"></div>
+
       <Navbar />
-      <Routes>
-        <Route path="/"           element={<Home />} />
-        <Route path="/login"      element={<Login />} />
-        <Route path="/signup"     element={<Signup />} />
-        
-        {/* Protected Routes */}
-        <Route path="/quiz"       element={<ProtectedRoute><QuizSetup /></ProtectedRoute>} />
-        <Route path="/quiz/play"  element={<ProtectedRoute><QuizPlay /></ProtectedRoute>} />
-        <Route path="/results"    element={<ProtectedRoute><Results /></ProtectedRoute>} />
-        
-        <Route path="*"           element={<Navigate to="/" />} />
-      </Routes>
+      <main className="reveal">
+        <Routes>
+          {/* 🔐 Gatekeeper: Privacy Redirect */}
+          <Route path="/"           element={token ? <Home /> : <Navigate to="/signup" replace />} />
+          <Route path="/login"      element={<Login />} />
+          <Route path="/signup"     element={<Signup />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          
+          <Route path="/quiz"       element={<ProtectedRoute><QuizSetup /></ProtectedRoute>} />
+          <Route path="/quiz/play"  element={<ProtectedRoute><QuizPlay /></ProtectedRoute>} />
+          <Route path="/results"    element={<ProtectedRoute><Results /></ProtectedRoute>} />
+          <Route path="/history"    element={<ProtectedRoute><History /></ProtectedRoute>} />
+          <Route path="/admin"      element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          
+          <Route path="*"           element={<Navigate to="/" />} />
+        </Routes>
+      </main>
     </BrowserRouter>
   );
 }

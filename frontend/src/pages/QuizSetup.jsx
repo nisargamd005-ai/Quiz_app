@@ -1,109 +1,82 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getStats } from '../api';
 
-const CATEGORIES = ['All', 'HTML', 'CSS', 'JavaScript', 'Python', 'SQL'];
-const DIFFICULTIES = ['All', 'Easy', 'Medium', 'Hard'];
-const LIMITS = [5, 10, 15, 20];
+const CATEGORIES = [
+  { name: 'HTML', icon: '🌐', color: '#ffc0c7' },
+  { name: 'CSS', icon: '🎨', color: '#fff4a3' },
+  { name: 'JavaScript', icon: '⚡', color: '#1f2937' },
+  { name: 'Python', icon: '🐍', color: '#f3f4f6' },
+  { name: 'SQL', icon: '🗄️', color: '#96d4d4' },
+];
 
 export default function QuizSetup() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const [setup, setSetup] = useState({
+    category: params.get('category') || 'HTML',
+    difficulty: 'Easy',
+    limit: 10
+  });
+  const [stats, setStats] = useState(null);
 
-  const initCat = params.get('category') || 'All';
-  const [category, setCategory] = useState(initCat);
-  const [difficulty, setDifficulty] = useState('All');
-  const [limit, setLimit] = useState(10);
-
-  const handleStart = () => {
-    const q = new URLSearchParams();
-    if (category !== 'All') q.set('category', category);
-    if (difficulty !== 'All') q.set('difficulty', difficulty);
-    q.set('limit', limit);
-    navigate(`/quiz/play?${q.toString()}`);
-  };
+  useEffect(() => {
+    getStats().then(setStats).catch(console.error);
+  }, []);
 
   return (
-    <div className="quiz-setup-page">
-      <div className="page-header">
-        <button
-          className="btn btn-outline btn-sm"
-          style={{ marginBottom: '1rem' }}
-          onClick={() => navigate('/')}
-        >
-          ← Back
-        </button>
-        <h1>Configure Your Quiz</h1>
-        <p>Choose your preferences and start testing your skills</p>
-      </div>
+    <div className="reveal container" style={{ padding: '6rem 0' }}>
+      <header style={{ textAlign: 'center', marginBottom: '6rem' }}>
+        <h4 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--pink-primary)', letterSpacing: '0.6em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>Challenge Configuration</h4>
+        <h1 style={{ fontSize: '5rem', fontWeight: 950, letterSpacing: '-0.06em', textTransform: 'uppercase', lineHeight: 0.9 }}>Set Your <span className="pink-glow">Limit</span></h1>
+        <p style={{ fontSize: '1.2rem', opacity: 0.4, maxWidth: '600px', margin: '2rem auto 0', fontWeight: 500 }}>Choose your discipline and level of engagement.</p>
+      </header>
 
-      <div className="card setup-card">
-        <div className="setup-section">
-          <span className="setup-label">Category</span>
-          <div className="option-group">
+      <div className="auth-box" style={{ maxWidth: '750px', margin: '0 auto', background: 'var(--bg-card)', padding: '5rem', backdropFilter: 'blur(20px)' }}>
+        <div className="form-group">
+          <label style={{ marginBottom: '2rem' }}>SELECT DISCIPLINE</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1.5rem' }}>
             {CATEGORIES.map(c => (
-              <button
-                key={c}
-                className={`option-pill ${category === c ? 'selected' : ''}`}
-                onClick={() => setCategory(c)}
-              >
-                {c}
+              <button key={c.name} className={`btn ${setup.category === c.name ? 'btn-primary' : 'btn-outline'}`} onClick={() => setSetup({...setup, category: c.name})} style={{ padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', border: setup.category === c.name ? 'none' : '1px solid rgba(255,255,255,0.1)' }}>
+                <span style={{ fontSize: '2.5rem' }}>{c.icon}</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em' }}>{c.name.toUpperCase()}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="setup-section">
-          <span className="setup-label">Difficulty</span>
-          <div className="option-group">
-            {DIFFICULTIES.map(d => (
-              <button
-                key={d}
-                className={`option-pill ${difficulty === d ? 'selected' : ''}`}
-                onClick={() => setDifficulty(d)}
-              >
-                {d}
-              </button>
-            ))}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginTop: '4rem' }}>
+          <div className="form-group">
+            <label>DIFFCULTY RANK</label>
+            <select className="form-input" value={setup.difficulty} onChange={e => setSetup({...setup, difficulty: e.target.value})} style={{ background: '#000', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
+              <option value="Easy">EASY - TRAINEE</option>
+              <option value="Medium">MEDIUM - PROFESSIONAL</option>
+              <option value="Hard">HARD - MASTER ELITE</option>
+            </select>
+          </div>
+          
+          <div className="form-group">
+            <label>PHASE DEPTH (QUESTIONS)</label>
+            <select className="form-input" value={setup.limit} onChange={e => setSetup({...setup, limit: parseInt(e.target.value)})} style={{ background: '#000', color: 'white', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
+              <option value="5">05 PHASES</option>
+              <option value="10">10 PHASES</option>
+              <option value="15">15 PHASES</option>
+              <option value="20">20 PHASES</option>
+            </select>
           </div>
         </div>
 
-        <div className="setup-section">
-          <span className="setup-label">Number of Questions</span>
-          <div className="option-group">
-            {LIMITS.map(l => (
-              <button
-                key={l}
-                className={`option-pill ${limit === l ? 'selected' : ''}`}
-                onClick={() => setLimit(l)}
-              >
-                {l} Questions
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary btn-lg" onClick={handleStart}>
-          Start Quiz →
+        <button className="btn btn-primary w-full" style={{ marginTop: '5rem', padding: '1.8rem', fontSize: '1.1rem', fontWeight: 900, boxShadow: '0 0 40px rgba(233,30,99,0.3)' }} onClick={() => navigate(`/quiz/play?category=${setup.category}&difficulty=${setup.difficulty}&limit=${setup.limit}`)}>
+          INITIATE ELITE CHALLENGE →
         </button>
       </div>
 
-      <div className="card" style={{ marginTop: '1.5rem', padding: '1.25rem', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-        {[
-          { icon: '⏱️', label: 'Timed', desc: '30s per question' },
-          { icon: '💡', label: 'Explanations', desc: 'After each answer' },
-          { icon: '📊', label: 'Results', desc: 'Detailed breakdown' },
-        ].map(f => (
-          <div key={f.label} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '1.5rem' }}>{f.icon}</span>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{f.label}</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{f.desc}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {stats && (
+        <div style={{ textAlign: 'center', marginTop: '6rem', display: 'flex', justifyContent: 'center', gap: '4rem', opacity: 0.5, fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.2em' }}>
+           <div>{stats?.total_questions || 0} TOTAL QUESTIONS</div>
+           <div>{stats?.total_users || 0} REGISTERED MASTERS</div>
+        </div>
+      )}
     </div>
   );
 }
