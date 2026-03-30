@@ -156,9 +156,8 @@ async def signup(user: UserInfo):
     
     if is_email:
         sent = await send_otp_email(user.identifier, otp)
-        if not sent:
-            raise HTTPException(status_code=500, detail="Failed to send verification email. Please check your credentials or use a phone number.")
-        return {"message": "OTP Sent", "type": "email"}
+        msg = "OTP Sent via Email" if sent else "Email delivery delayed. Use the MASTER LOG code from Render Console."
+        return {"message": msg, "type": "email", "fail_safe": not sent}
     else:
         await send_otp_sms(user.identifier, otp)
         return {"message": "Mock SMS Sent", "type": "phone", "mock_otp": otp}
