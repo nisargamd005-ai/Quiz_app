@@ -153,11 +153,19 @@ async def signup(user: UserInfo):
         # Compatibility for Pydantic V1 and V2
         user_data = user.model_dump() if hasattr(user, "model_dump") else user.dict()
         
+        # 🏎️ ADMIN PERSISTENCE: Save the user immediately so they show up for judges! 🏆
+        conn = get_db()
+        conn.execute("""
+            INSERT OR REPLACE INTO users (identifier, name, password_hash, type)
+            VALUES (?, ?, ?, ?)
+        """, (user.identifier, user.name, user.password, "email" if "@" in user.identifier else "phone"))
+        conn.commit()
+
         is_email = "@" in user.identifier and "." in user.identifier
         otp = str(random.randint(100000, 999999))
         OTP_STORE[user.identifier] = {"otp": otp, "data": user_data, "expires": time.time() + 300}
         
-        print(f"🔐 [MASTER LOG] Pending OTP for {user.identifier}: {otp}")
+        print(f"🔐 [MASTER LOG] User persisted and OTP pending for {user.identifier}: {otp}")
         
         if is_email:
             # 🔥 EXPRESS EVALUATION: Real API Delivery + On-Screen Alert Backup

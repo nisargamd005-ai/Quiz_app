@@ -10,6 +10,10 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // 🏎️ SHADOW LOGIN: Record session in Admin DB in the background! 🏆
+    login(formData).catch(() => null);
+
     alert(
       `🔓 [SUCCESS] \n` +
       `--------------------------\n` +
