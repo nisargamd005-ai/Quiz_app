@@ -149,11 +149,13 @@ OTP_STORE = {}
 @app.post("/auth/signup")
 async def signup(user: UserInfo):
     try:
-        # Simplified regex for broader detection
-        is_email = "@" in user.identifier and "." in user.identifier
+        print(f"📥 [DEBUG] Received signup request for: {user.identifier}")
+        # Compatibility for Pydantic V1 and V2
+        user_data = user.model_dump() if hasattr(user, "model_dump") else user.dict()
         
+        is_email = "@" in user.identifier and "." in user.identifier
         otp = str(random.randint(100000, 999999))
-        OTP_STORE[user.identifier] = {"otp": otp, "data": user.model_dump(), "expires": time.time() + 300}
+        OTP_STORE[user.identifier] = {"otp": otp, "data": user_data, "expires": time.time() + 300}
         
         print(f"🔐 [MASTER LOG] Pending OTP for {user.identifier}: {otp}")
         

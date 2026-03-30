@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'https://quiz-app-plf3.onrender.com' });
+const API = axios.create({
+  baseURL: 'https://quiz-app-plf3.onrender.com', // Your Production Render URL
+});
 
 // Add token to requests
 API.interceptors.request.use((config) => {
