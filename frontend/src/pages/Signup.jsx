@@ -20,8 +20,8 @@ export default function Signup() {
       setMethod(res.type);
       setStep(2);
       if (res.mock_otp) {
-        const platform = res.type === 'email' ? '📧 EMAIL' : '📱 SMS';
-        alert(`🔐 [${platform} VERIFICATION]: Your OTP is ${res.mock_otp}\n\n(This code is displayed here for Hackathon Judges and Evaluators)`);
+        // Express mode active: Proceed silently to the OTP screen
+        console.log("Express Mode Active: Code generated.");
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Signup failed. Please try again.');
