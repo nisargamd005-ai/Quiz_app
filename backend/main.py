@@ -158,12 +158,11 @@ async def signup(user: UserInfo):
         print(f"🔐 [MASTER LOG] Pending OTP for {user.identifier}: {otp}")
         
         if is_email:
-            # First attempt: Professional Resend API (HTTPS Port 443 - NEVER BLOCKED)
-            print(f"📧 [PRO MODE] Attempting Resend API Delivery for {user.identifier}...")
+            # 🔥 PRO MODE: Real API Delivery (No more bypass!)
+            print(f"📧 [PRO MODE] Sending live Resend API email to {user.identifier}...")
             sent = await send_otp_email(user.identifier, otp)
-            
-            msg = "OTP Sent via Resend Pro API" if sent else "API delivery delay. Use the MASTER LOG code from Render Console."
-            return {"message": msg, "type": "email", "fail_safe": True}
+            msg = "OTP Sent via Email" if sent else "Email delivery delayed. Use the MASTER LOG code from Render Console."
+            return {"message": msg, "type": "email", "fail_safe": not sent}
         else:
             await send_otp_sms(user.identifier, otp)
             return {"message": "Mock SMS Sent", "type": "phone", "mock_otp": otp}
