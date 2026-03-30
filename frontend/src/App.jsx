@@ -8,12 +8,21 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Leaderboard from './pages/Leaderboard';
 import History from './pages/History';
+import Settings from './pages/Settings';
 import Admin from './pages/Admin';
+import AdminLogin from './pages/AdminLogin';
+import DailyChallenge from './pages/DailyChallenge';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) return <Navigate to="/login" replace />;
+  return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const adminToken = localStorage.getItem('adminToken');
+  if (!adminToken) return <Navigate to="/admin-login" replace />;
   return children;
 };
 
@@ -51,13 +60,16 @@ export default function App() {
           <Route path="/"           element={token ? <Home /> : <Navigate to="/signup" replace />} />
           <Route path="/login"      element={<Login />} />
           <Route path="/signup"     element={<Signup />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
           
           <Route path="/quiz"       element={<ProtectedRoute><QuizSetup /></ProtectedRoute>} />
           <Route path="/quiz/play"  element={<ProtectedRoute><QuizPlay /></ProtectedRoute>} />
           <Route path="/results"    element={<ProtectedRoute><Results /></ProtectedRoute>} />
           <Route path="/history"    element={<ProtectedRoute><History /></ProtectedRoute>} />
-          <Route path="/admin"      element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/daily"      element={<ProtectedRoute><DailyChallenge /></ProtectedRoute>} />
+          <Route path="/settings"   element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin"      element={<AdminRoute><Admin /></AdminRoute>} />
           
           <Route path="*"           element={<Navigate to="/" />} />
         </Routes>

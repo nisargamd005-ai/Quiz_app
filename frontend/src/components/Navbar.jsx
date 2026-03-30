@@ -28,18 +28,26 @@ export default function Navbar() {
         </Link>
         
         <ul className="navbar-links">
-          <li><NavLink to="/" end>Explore</NavLink></li>
-          <li><NavLink to="/leaderboard">Leaderboard</NavLink></li>
-          {user && <li><NavLink to="/history">My Journey</NavLink></li>}
-          {user?.email === 'nishugowda071@gmail.com' && <li><NavLink to="/admin">Admin</NavLink></li>}
+          {user && (
+            <>
+              <li><NavLink to="/" end>Home</NavLink></li>
+              <li><NavLink to="/daily">🎯 Daily</NavLink></li>
+              <li><NavLink to="/leaderboard">Rankings</NavLink></li>
+              <li><NavLink to="/history">History</NavLink></li>
+            </>
+          )}
         </ul>
 
         <div className="navbar-actions">
           {user ? (
             <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--pink-primary)' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--pink-elite)' }}>
                 {user.name.toUpperCase()}
               </span>
+              <Link to="/settings" style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-dim)', textDecoration: 'none', transition: 'color 0.2s' }}
+                onMouseEnter={e => e.target.style.color = 'var(--text-pure)'}
+                onMouseLeave={e => e.target.style.color = 'var(--text-dim)'}
+              >⚙️ Settings</Link>
               <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.7rem' }} onClick={handleLogout}>
                 Logout
               </button>
@@ -47,7 +55,7 @@ export default function Navbar() {
           ) : (
             <div style={{ display: 'flex', gap: '1rem' }}>
               <Link to="/login" className="btn btn-outline" style={{ padding: '0.6rem 1.2rem', fontSize: '0.75rem' }}>Login</Link>
-              <Link to="/signup" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.75rem' }}>Join</Link>
+              <Link to="/signup" className="btn btn-primary" style={{ padding: '0.6rem 1.2rem', fontSize: '0.75rem' }}>Join Now</Link>
             </div>
           )}
         </div>

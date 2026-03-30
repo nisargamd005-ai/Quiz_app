@@ -7,8 +7,8 @@ export default function History() {
   const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
-    if (user?.email) {
-      getHistory(user.email).then(setHistory).finally(() => setLoading(false));
+    if (user?.identifier) {
+      getHistory(user.identifier).then(setHistory).finally(() => setLoading(false));
     }
   }, []);
 

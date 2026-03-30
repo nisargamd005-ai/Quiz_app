@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../api';
 
 export default function Login() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ identifier: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function Login() {
       navigate('/');
       window.location.reload();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid email or password');
+      setError(err.response?.data?.detail || 'Invalid identifier or password');
     } finally {
       setLoading(false);
     }
@@ -39,11 +39,11 @@ export default function Login() {
 
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label>EMAIL ADDRESS</label>
+            <label>EMAIL OR PHONE NUMBER</label>
             <input 
-              type="email" required className="form-input" 
-              placeholder="you@master.com"
-              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              type="text" required className="form-input" 
+              placeholder="you@master.com or +1234567890"
+              onChange={e => setFormData({ ...formData, identifier: e.target.value })}
             />
           </div>
           <div className="form-group">

@@ -5,10 +5,10 @@ import { playSound } from '../App';
 function MasteryChart({ percentage }) {
   const dash = (percentage / 100) * 283;
   return (
-    <div style={{ position: 'relative', width: '240px', height: '240px', margin: '0 auto' }}>
-      <svg width="240" height="240" viewBox="0 0 100 100">
+    <div style={{ position: 'relative', width: '220px', height: '220px', margin: '0 auto' }}>
+      <svg width="220" height="220" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="45" fill="none" stroke="#111" strokeWidth="8" />
-        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--pink-elite)" strokeWidth="8" strokeDasharray="283" strokeDashoffset={283 - dash} strokeLinecap="round" transform="rotate(-90 50 50)" style={{ transition: 'stroke-dashoffset 3s cubic-bezier(0.19, 1, 0.22, 1)' }} />
+        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--pink-elite)" strokeWidth="8" strokeDasharray="283" strokeDashoffset={283 - dash} strokeLinecap="round" transform="rotate(-90 50 50)" style={{ transition: 'stroke-dashoffset 2s cubic-bezier(0.19, 1, 0.22, 1)' }} />
       </svg>
       <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
         <h2 style={{ fontSize: '3rem', fontWeight: 950, letterSpacing: '-0.05em' }}>{percentage}%</h2>
@@ -22,7 +22,7 @@ function SparkleEffect({ percentage }) {
   if (percentage < 60) return null;
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 999 }}>
-      {[...Array(60)].map((_, i) => (
+      {[...Array(80)].map((_, i) => (
         <div key={i} style={{
           position: 'absolute',
           top: '-20px',
@@ -50,10 +50,11 @@ export default function Results() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!state?.result) navigate('/');
+    if (!state?.questions) navigate('/');
     else {
       // 🔊 Elite Victory Chord
-      if (state.result.percentage >= 80) {
+      const pass = getPercentage() >= 60;
+      if (pass) {
         setTimeout(() => playSound(440, 'sine', 1), 100);
         setTimeout(() => playSound(554.37, 'sine', 1), 200);
         setTimeout(() => playSound(659.25, 'sine', 1), 300);
@@ -63,12 +64,37 @@ export default function Results() {
     }
   }, [state]);
 
-  if (!state?.result) return null;
+  if (!state?.questions) return null;
 
-  const { result } = state;
-  const { score, total, percentage } = result;
+  const questions = state.questions || [];
+  const answers = state.answers || {};
+  const mode = state.mode || 'practice';
+  let correctCount = 0;
+  let totalTime = 0;
+  let gamifiedXP = 0;
+  let mistakeQuestions = [];
 
+  questions.forEach((q, idx) => {
+    const ans = answers[q.id];
+    const isBoss = (mode !== 'practice' && idx === questions.length - 1);
+    
+    if (ans) {
+      totalTime += (ans.time || 0);
+      if (ans.selected === q.correct_answer) {
+        correctCount++;
+        gamifiedXP += isBoss ? 500 : 100; // Bonus points for correct answers
+      } else {
+        mistakeQuestions.push(q);
+      }
+    } else {
+      mistakeQuestions.push(q);
+    }
+  });
+
+  const getPercentage = () => Math.round((correctCount / questions.length) * 100);
+  const percentage = getPercentage();
   const pass = percentage >= 60;
+  const avgTime = Math.round(totalTime / questions.length);
 
   const getRank = (pct) => {
     if (pct >= 100) return { title: 'GRAND MASTER', desc: 'System Perfection Achieved.', icon: '🏆', color: '#ffd700' };
@@ -77,12 +103,24 @@ export default function Results() {
     return { title: 'CHALLENGE FAILED', desc: 'Return to the vault. Try Again.', icon: '🏮', color: 'rgba(255,255,255,0.2)' };
   };
 
+  const getTimeAnalysis = (avg) => {
+    if (avg < 5) return { label: 'Lightning Fast ⚡', comment: 'Careful not to rush.' };
+    if (avg < 15) return { label: 'Optimal Pacing ⏱️', comment: 'Perfect blend of speed and accuracy.' };
+    return { label: 'Deep Thinker 🧠', comment: 'Consider trusting your gut more.' };
+  };
+
   const rank = getRank(percentage);
+  const timeAnalysis = getTimeAnalysis(avgTime);
+
+  const handlePracticeMistakes = () => {
+    navigate('/quiz/play', { state: { mistakeQuestions } });
+  };
 
   return (
     <div className="reveal container" style={{ padding: '6rem 0' }}>
       <SparkleEffect percentage={percentage} />
 
+      {/* ── Header ── */}
       <header style={{ textAlign: 'center', marginBottom: '8rem' }}>
         <h4 style={{ fontSize: '0.85rem', fontWeight: 950, color: pass ? 'var(--pink-elite)' : '#666', letterSpacing: '0.6em', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
            {pass ? 'SYSTEM CLEARANCE: GRANTED ✓' : 'SYSTEM OVERRIDE: DENIED ✕'}
@@ -93,10 +131,68 @@ export default function Results() {
         <h1 style={{ fontSize: '6rem', fontWeight: 950, letterSpacing: '-0.06em', textTransform: 'uppercase', lineHeight: 0.8, color: pass ? 'var(--text-pure)' : '#444' }}>
            {pass ? 'STATUS: ' : ''} <span className={pass ? "pink-glow" : ""}> {pass ? 'PASSED' : 'TRY AGAIN'}</span>
         </h1>
-        <p className="reveal" style={{ fontSize: '1.4rem', opacity: 0.4, marginTop: '2.5rem', fontWeight: 500 }}>
+        <p className="reveal" style={{ fontSize: '1.4rem', opacity: 0.6, marginTop: '2.5rem', fontWeight: 500 }}>
            {rank.title}: {rank.desc}
         </p>
       </header>
+
+      {/* ── Top Level Stats ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '4rem', marginBottom: '4rem' }}>
+         {/* Chart Box */}
+         <div style={{ background: 'var(--bg-card)', padding: '4rem 3rem', borderRadius: 'var(--radius-xl)', border: 'var(--border-pink)', textAlign: 'center', backdropFilter: 'var(--glass)', boxShadow: 'var(--shadow-pink)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <MasteryChart percentage={percentage} />
+         </div>
+         
+         {/* Details Box */}
+         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+            <div style={{ flex: 1, background: 'linear-gradient(135deg, rgba(255,215,0,0.05), rgba(233,30,99,0.05))', border: '1px solid rgba(255,215,0,0.3)', borderRadius: 'var(--radius-lg)', padding: '3.5rem', textAlign: 'center', boxShadow: '0 0 30px rgba(255,215,0,0.1)' }}>
+               <h2 style={{ fontSize: '3.5rem', fontWeight: 950, color: '#ffd700', marginBottom: '0.5rem' }}>+{gamifiedXP} XP</h2>
+               <p style={{ fontSize: '0.8rem', opacity: 0.7, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Session Experience Points</p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '2.5rem', flex: 1 }}>
+              <div style={{ flex: 1, background: 'var(--bg-card)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 'var(--radius-lg)', padding: '2.5rem', textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '2.5rem', fontWeight: 900 }}>{correctCount} / {questions.length}</h2>
+                 <p style={{ fontSize: '0.7rem', opacity: 0.5, fontWeight: 900, letterSpacing: '0.1em' }}>CORRECT HITS</p>
+              </div>
+              <div style={{ flex: 1, background: 'var(--bg-card)', border: mistakeQuestions.length > 0 ? '1px dashed var(--pink-elite)' : '1px solid rgba(255,255,255,0.1)', borderRadius: 'var(--radius-lg)', padding: '2.5rem', textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: mistakeQuestions.length > 0 ? 'var(--pink-elite)' : '#00c864' }}>{mistakeQuestions.length}</h2>
+                 <p style={{ fontSize: '0.7rem', opacity: 0.5, fontWeight: 900, letterSpacing: '0.1em' }}>MISTAKES</p>
+              </div>
+            </div>
+         </div>
+      </div>
+
+      {/* ── Time Analysis ── */}
+      <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-xl)', border: 'var(--border-pink)', padding: '4rem', marginBottom: '4rem', display: 'flex', alignItems: 'center', gap: '4rem', backdropFilter: 'var(--glass)' }}>
+        <div style={{ fontSize: '4rem' }}>{timeAnalysis.label.split(' ')[1]}</div>
+        <div>
+          <h3 style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--pink-elite)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '0.8rem' }}>AI Time Analysis</h3>
+          <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.8rem' }}>{timeAnalysis.label.split(' ')[0]} Pace: {avgTime}s / q</h2>
+          <p style={{ fontSize: '1.2rem', opacity: 0.6, fontWeight: 500 }}>{timeAnalysis.comment} You spent a total of {totalTime} seconds in the vault.</p>
+        </div>
+      </div>
+
+      {/* ── Action Buttons ── */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+         {mistakeQuestions.length > 0 && (
+           <button 
+             className="btn" 
+             style={{ 
+               minWidth: '280px', 
+               background: 'rgba(233,30,99,0.1)', 
+               border: '1px solid var(--pink-elite)', 
+               color: 'white',
+               boxShadow: '0 0 30px var(--pink-glow)'
+             }} 
+             onClick={handlePracticeMistakes}
+           >
+             🔄 Practice Mistakes
+           </button>
+         )}
+         <button className="btn btn-primary btn-lg" style={{ minWidth: '220px' }} onClick={() => navigate('/quiz')}>🔄 New Domain</button>
+         <button className="btn btn-outline btn-lg" style={{ minWidth: '220px' }} onClick={() => navigate('/')}>🏠 Return Home</button>
+      </div>
 
       <style>{`
          @keyframes pulseElite {
@@ -105,28 +201,6 @@ export default function Results() {
            100% { transform: scale(1); }
          }
       `}</style>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '4rem', marginBottom: '8rem' }}>
-         <div style={{ background: 'var(--bg-card)', padding: '5rem 3rem', borderRadius: 'var(--radius-xl)', border: 'var(--border-pink)', textAlign: 'center', backdropFilter: 'var(--glass)', boxShadow: 'var(--shadow-pink)' }}>
-            <MasteryChart percentage={percentage} />
-         </div>
-         
-         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-            <div style={{ flex: 1, background: 'var(--bg-card)', border: 'var(--border-pink)', borderRadius: 'var(--radius-lg)', padding: '3.5rem', textAlign: 'center', transition: 'all 0.4s' }}>
-               <h2 style={{ fontSize: '4.5rem', fontWeight: 950 }}>{score} / {total}</h2>
-               <p style={{ fontSize: '0.85rem', opacity: 0.5, fontWeight: 900, letterSpacing: '0.2em' }}>ACCURACY METRICS</p>
-            </div>
-            <div style={{ flex: 1, background: 'var(--bg-card)', border: 'var(--border-pink)', borderRadius: 'var(--radius-lg)', padding: '3.5rem', textAlign: 'center' }}>
-               <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--pink-elite)' }}>{total - score} MISSED</h2>
-               <p style={{ fontSize: '0.85rem', opacity: 0.5, fontWeight: 900, letterSpacing: '0.2em' }}>CORRECTION POTENTIAL</p>
-            </div>
-         </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '3rem' }}>
-         <button className="btn btn-primary btn-lg" style={{ minWidth: '220px' }} onClick={() => navigate('/quiz')}>🔄 RE-CHALLENGE</button>
-         <button className="btn btn-outline btn-lg" style={{ minWidth: '220px' }} onClick={() => navigate('/')}>🏠 RETURN HOME</button>
-      </div>
     </div>
   );
 }

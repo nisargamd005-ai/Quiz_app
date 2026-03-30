@@ -3,9 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { signup, verifyOTP } from '../api';
 
 export default function Signup() {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', identifier: '', password: '' });
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1); // 1: Info, 2: OTP
+  const [method, setMethod] = useState('email'); // 'email' or 'phone'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,8 +16,12 @@ export default function Signup() {
     setError('');
     setLoading(true);
     try {
-      await signup(formData);
+      const res = await signup(formData);
+      setMethod(res.type);
       setStep(2);
+      if (res.mock_otp) {
+        alert('📱 [MOCK SMS]: Your OTP is ' + res.mock_otp + '\n(Displayed here because SMS requires a paid provider)');
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'Signup failed. Please try again.');
     } finally {
@@ -29,7 +34,7 @@ export default function Signup() {
     setError('');
     setLoading(true);
     try {
-      const res = await verifyOTP({ email: formData.email, otp });
+      const res = await verifyOTP({ identifier: formData.identifier, otp });
       localStorage.setItem('token', res.token);
       localStorage.setItem('user', JSON.stringify(res.user));
       navigate('/');
@@ -45,18 +50,20 @@ export default function Signup() {
     <div className="animate-slide-up container">
       <div className="auth-container">
         <div className="auth-header">
-          <h2>{step === 1 ? 'Join the Elite' : 'Verify Your Email'}</h2>
+          <h2>{step === 1 ? 'Join the Elite' : `Verify Your ${method === 'email' ? 'Email' : 'Phone'}`}</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-            {step === 1 ? 'Start your journey to becoming a master developer.' : `We sent an OTP to ${formData.email}. Check your console!`}
+            {step === 1 ? 'Start your journey to becoming a master developer.' : `We sent an OTP to ${formData.identifier}.`}
           </p>
         </div>
 
         {step === 2 && (
           <div style={{ background: 'rgba(233, 30, 99, 0.1)', border: '1px solid var(--pink-primary)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem', textAlign: 'center' }}>
-            <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '0.5rem' }}>📧</span>
-            <strong style={{ color: 'var(--pink-primary)', display: 'block', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Check Your Email</strong>
+            <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '0.5rem' }}>{method === 'email' ? '📧' : '📱'}</span>
+            <strong style={{ color: 'var(--pink-primary)', display: 'block', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Check Your {method === 'email' ? 'Email' : 'Messages'}
+            </strong>
             <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 500, opacity: 0.9 }}>
-              We've sent a 6-digit verification code to your inbox. Let's make it official!
+              We've sent a 6-digit verification code to your {method === 'email' ? 'inbox' : 'SMS'}. Let's make it official!
             </p>
           </div>
         )}
@@ -74,11 +81,11 @@ export default function Signup() {
               />
             </div>
             <div className="form-group">
-              <label>EMAIL ADDRESS</label>
+              <label>EMAIL OR PHONE NUMBER</label>
               <input 
-                type="email" required className="form-input" 
-                placeholder="you@master.com"
-                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                type="text" required className="form-input" 
+                placeholder="you@master.com or +1234567890"
+                onChange={e => setFormData({ ...formData, identifier: e.target.value })}
               />
             </div>
             <div className="form-group">
@@ -101,7 +108,10 @@ export default function Signup() {
             <div className="form-group">
               <label>ENTER 6-DIGIT OTP</label>
               <input 
+                key="otp-input"
                 type="text" maxLength={6} required className="form-input" 
+                name="otp" id="otp-field" autoComplete="off"
+                value={otp}
                 placeholder="123456" style={{ textAlign: 'center', fontSize: '2rem', letterSpacing: '0.5rem' }}
                 onChange={e => setOtp(e.target.value)}
               />
