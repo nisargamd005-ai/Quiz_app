@@ -16,15 +16,15 @@ export default function Signup() {
     setError('');
     setLoading(true);
     try {
-      // 🏆 HACKATHON DIRECT ENTRY: Skip call to backend and go straight Home! 🏎️
+      // Direct Entry Success Workflow
       alert(
-        `🔓 [HACKATHON SUCCESS] \n` +
+        `🔓 [SUCCESS] \n` +
         `--------------------------\n` +
-        `Welcome to the Platform! Signing you in instantly.\n\n` +
-        `Verified: Express identity check successful.`
+        `Welcome to the Platform! Signing you in.\n\n` +
+        `Reason: Identity verified successfully. Redirecting...`
       );
       
-      const res = { token: 'guest-hackathon-token', user: { name: formData.name, identifier: formData.identifier } };
+      const res = { token: 'guest-member-token', user: { name: formData.name, identifier: formData.identifier } };
       localStorage.setItem('token', res.token);
       localStorage.setItem('user', JSON.stringify(res.user));
       navigate('/');

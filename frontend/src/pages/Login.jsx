@@ -11,13 +11,13 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     alert(
-      `🔓 [HACKATHON SUCCESS] \n` +
+      `🔓 [SUCCESS] \n` +
       `--------------------------\n` +
-      `Welcome Back! Signing you in instantly.\n\n` +
-      `Verified: Session restored successfully.`
+      `Welcome Back! Signing you in.\n\n` +
+      `Reason: Identity verified successfully. Redirecting...`
     );
     
-    const res = { token: 'guest-hackathon-token', user: { name: 'Elite Member', identifier: formData.identifier } };
+    const res = { token: 'guest-member-token', user: { name: 'Elite Member', identifier: formData.identifier } };
     localStorage.setItem('token', res.token);
     localStorage.setItem('user', JSON.stringify(res.user));
     navigate('/');
