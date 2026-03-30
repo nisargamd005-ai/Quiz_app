@@ -20,8 +20,8 @@ export default function Signup() {
       setMethod(res.type);
       setStep(2);
       if (res.mock_otp) {
-        // Express mode active: Proceed silently to the OTP screen
-        console.log("Express Mode Active: Code generated.");
+        const typeStr = res.type === 'email' ? 'EMAIL' : 'PHONE NUMBER';
+        alert(`🔐 [OTP VERIFICATION]\n\nWe have generated this 6-digit code for your secure Signup with ${typeStr}.\n\nYour Access Code: ${res.mock_otp}\n\n(This code is displayed on-screen because real-time SMS/Email delivery is restricted on free-tier cloud hosting.)`);
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Signup failed. Please try again.');
