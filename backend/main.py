@@ -106,7 +106,7 @@ async def send_otp_email(to_email: str, otp: str):
     message["From"] = SMTP_USER
     message["To"] = to_email
     try:
-        await aiosmtplib.send(message, hostname=SMTP_SERVER, port=587, username=SMTP_USER, password=SMTP_PASS, start_tls=True)
+        await aiosmtplib.send(message, hostname=SMTP_SERVER, port=465, username=SMTP_USER, password=SMTP_PASS, use_tls=True)
         print(f"📧 [SUCCESS] OTP {otp} sent successfully to {to_email}")
         return True
     except Exception as e:
