@@ -201,7 +201,9 @@ def verify_otp(data: OTPVerify):
                      (user["identifier"], user["name"], p_hash, type_))
         conn.commit()
     except sqlite3.IntegrityError:
-        raise HTTPException(status_code=400, detail="User exists")
+        # 🏁 IGNORE IF EXISTS: Just log them in!
+        print(f"🔄 [EXISTING USER] {user['identifier']} logging in instead of signup.")
+        pass # The user already exists, so we just proceed to return the token.
     token = hashlib.sha256(f"{user['identifier']}{time.time()}".encode()).hexdigest()
     return {"token": token, "user": {"name": user["name"], "identifier": user["identifier"]}}
 
