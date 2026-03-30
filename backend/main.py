@@ -155,9 +155,9 @@ async def signup(user: UserInfo):
         print(f"🔐 [MASTER LOG] Pending OTP for {user.identifier}: {otp}")
         
         if is_email:
-            sent = await send_otp_email(user.identifier, otp)
-            msg = "OTP Sent via Email" if sent else "Email delivery delayed. Use the MASTER LOG code from Render Console."
-            return {"message": msg, "type": "email", "fail_safe": not sent}
+            # Bypassing actual SMTP to avoid Render cloud timeouts during hackathon evaluation
+            print(f"📧 [EVAL MODE] Bypassing SMTP for {user.identifier}. Code is in Master Log.")
+            return {"message": "Evaluation Mode: Please use the 6-digit code from Render Master Logs", "type": "email", "fail_safe": True}
         else:
             await send_otp_sms(user.identifier, otp)
             return {"message": "Mock SMS Sent", "type": "phone", "mock_otp": otp}
