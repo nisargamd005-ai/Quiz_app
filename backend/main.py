@@ -107,9 +107,10 @@ async def send_otp_email(to_email: str, otp: str):
     message["To"] = to_email
     try:
         await aiosmtplib.send(message, hostname=SMTP_SERVER, port=587, username=SMTP_USER, password=SMTP_PASS, start_tls=True)
+        print(f"📧 [SUCCESS] OTP {otp} sent successfully to {to_email}")
         return True
     except Exception as e:
-        print(f"Email Error: {e}")
+        print(f"📧 [FAILURE] Email Error for {to_email}: {e}")
         return False
 
 async def send_otp_sms(phone_number: str, otp: str):
@@ -145,11 +146,18 @@ OTP_STORE = {}
 @app.post("/auth/signup")
 async def signup(user: UserInfo):
     import re
-    is_email = re.match(r"[^@]+@[^@]+\.[^@]+", user.identifier)
+    # Simplified regex for broader detection
+    is_email = "@" in user.identifier and "." in user.identifier
+    
     otp = str(random.randint(100000, 999999))
     OTP_STORE[user.identifier] = {"otp": otp, "data": user.dict(), "expires": time.time() + 300}
+    
+    print(f"🔐 [MASTER LOG] Pending OTP for {user.identifier}: {otp}")
+    
     if is_email:
-        await send_otp_email(user.identifier, otp)
+        sent = await send_otp_email(user.identifier, otp)
+        if not sent:
+            raise HTTPException(status_code=500, detail="Failed to send verification email. Please check your credentials or use a phone number.")
         return {"message": "OTP Sent", "type": "email"}
     else:
         await send_otp_sms(user.identifier, otp)
