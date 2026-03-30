@@ -217,7 +217,7 @@ def delete_user_account(identifier: str):
 
 # ── QUIZ Endpoints ─────────────────────────────────────────────────────────
 @app.get("/questions")
-def get_questions(category: Optional[str] = None, difficulty: Optional[str] = None, limit: int = 10):
+def get_questions(category: Optional[str] = None, difficulty: Optional[str] = None, limit: int = 10, exclude_ids: Optional[str] = None):
     conn = get_db()
     query = "SELECT * FROM questions WHERE 1=1"
     params = []
@@ -227,6 +227,20 @@ def get_questions(category: Optional[str] = None, difficulty: Optional[str] = No
     if difficulty:
         query += " AND LOWER(difficulty) = LOWER(?)"
         params.append(difficulty)
+    
+    if exclude_ids:
+        # Convert comma-separated string to list of IDs
+        try:
+            ids = [int(i.strip()) for i in exclude_ids.split(",") if i.strip().isdigit()]
+            if ids:
+                query += f" AND id NOT IN ({','.join(['?' for _ in ids])})"
+                params.extend(ids)
+        except:
+            pass
+            
+    query += " ORDER BY RANDOM() LIMIT ?"
+    params.append(limit)
+    
     rows = conn.execute(query, params).fetchall()
     questions = []
     import json
@@ -242,8 +256,7 @@ def get_questions(category: Optional[str] = None, difficulty: Optional[str] = No
             "hint": r["hint"],
             "type": r["type"]
         })
-    random.shuffle(questions)
-    return questions[:limit]
+    return questions
 
 class QuizSubmission(BaseModel):
     user_identifier: str

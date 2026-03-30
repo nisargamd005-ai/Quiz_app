@@ -19,14 +19,17 @@ export const verifyOTP = (data) => API.post('/auth/verify-otp', data).then(r => 
 // QUIZ
 export const getQuestions = async (params) => {
   try {
+    // If we have seenIds in localStorage, pass them to exclude
+    const seenIds = JSON.parse(localStorage.getItem('seenQuestionIds') || '[]');
+    if (seenIds.length > 0) {
+      params = { ...params, exclude_ids: seenIds.join(',') };
+    }
+    
     const res = await API.get('/questions', { params });
-    localStorage.setItem('cachedQuestions', JSON.stringify(res.data));
     return res.data;
-  } catch (e) {
-    console.warn("Offline mode activated. Loading local cache.");
-    const cached = localStorage.getItem('cachedQuestions');
-    if (cached) return JSON.parse(cached);
-    throw e;
+  } catch (error) {
+    console.error('Error fetching questions:', error);
+    throw error;
   }
 };
 export const submitQuiz = (data) => API.post('/quiz/submit', data).then(r => r.data);

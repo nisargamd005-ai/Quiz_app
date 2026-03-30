@@ -53,7 +53,16 @@ export default function QuizPlay() {
     }
 
     getQuestions(params)
-      .then(qs => { if (qs.length === 0) navigate('/'); setQuestions(qs); })
+      .then(qs => { 
+        if (qs.length === 0) navigate('/'); 
+        
+        // Mark all fetched questions as 'seen'
+        const seenIds = JSON.parse(localStorage.getItem('seenQuestionIds') || '[]');
+        const updatedSeenIds = Array.from(new Set([...seenIds, ...qs.map(q => q.id)]));
+        localStorage.setItem('seenQuestionIds', JSON.stringify(updatedSeenIds.slice(-200))); // Keep last 200 to avoid total lockout
+        
+        setQuestions(qs); 
+      })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false));
   }, []);
