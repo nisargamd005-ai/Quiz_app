@@ -145,22 +145,25 @@ OTP_STORE = {}
 
 @app.post("/auth/signup")
 async def signup(user: UserInfo):
-    import re
-    # Simplified regex for broader detection
-    is_email = "@" in user.identifier and "." in user.identifier
-    
-    otp = str(random.randint(100000, 999999))
-    OTP_STORE[user.identifier] = {"otp": otp, "data": user.dict(), "expires": time.time() + 300}
-    
-    print(f"🔐 [MASTER LOG] Pending OTP for {user.identifier}: {otp}")
-    
-    if is_email:
-        sent = await send_otp_email(user.identifier, otp)
-        msg = "OTP Sent via Email" if sent else "Email delivery delayed. Use the MASTER LOG code from Render Console."
-        return {"message": msg, "type": "email", "fail_safe": not sent}
-    else:
-        await send_otp_sms(user.identifier, otp)
-        return {"message": "Mock SMS Sent", "type": "phone", "mock_otp": otp}
+    try:
+        # Simplified regex for broader detection
+        is_email = "@" in user.identifier and "." in user.identifier
+        
+        otp = str(random.randint(100000, 999999))
+        OTP_STORE[user.identifier] = {"otp": otp, "data": user.model_dump(), "expires": time.time() + 300}
+        
+        print(f"🔐 [MASTER LOG] Pending OTP for {user.identifier}: {otp}")
+        
+        if is_email:
+            sent = await send_otp_email(user.identifier, otp)
+            msg = "OTP Sent via Email" if sent else "Email delivery delayed. Use the MASTER LOG code from Render Console."
+            return {"message": msg, "type": "email", "fail_safe": not sent}
+        else:
+            await send_otp_sms(user.identifier, otp)
+            return {"message": "Mock SMS Sent", "type": "phone", "mock_otp": otp}
+    except Exception as e:
+        print(f"CRITICAL ERROR in signup: {e}")
+        raise HTTPException(status_code=500, detail=f"Server Internal Error: {str(e)}")
 
 @app.post("/auth/verify-otp")
 def verify_otp(data: OTPVerify):
